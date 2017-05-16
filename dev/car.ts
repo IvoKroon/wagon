@@ -4,13 +4,17 @@ class Car{
     private radius:number;
     private game:Game;
     private step:number = 1;
+    private blockSize:number;
 
-    constructor(game:Game,x:number, y:number){
+    constructor(game:Game, startPos:Pos, blockSize:number){
         this.radius = 10;
         this.game = game;
 
-        this.x = x;
-        this.y = y;
+        this.blockSize = blockSize;
+
+        this.x = blockSize / 2 + 10 + blockSize * startPos.x;
+        this.y = blockSize / 2 + 10 + blockSize * startPos.y; 
+               
     }
 
     draw(){
@@ -21,8 +25,6 @@ class Car{
         this.game.context.closePath();
     }
 
-
-
     private moveToPoint(endX:number, endY:number){
         let xDone = false;
         let yDone = false;
@@ -31,7 +33,6 @@ class Car{
             xDone = true;
         }else{
             console.log("X = " + this.x + " - " + endX);
-            // console.log("MOVING X");
             if(this.x - endX > 0){
                 this.x--;
             }else{
@@ -52,36 +53,25 @@ class Car{
         }
 
         if(yDone && xDone){
-            this.draw();
+            // this.draw();
             return true;
         }
-        this.draw();
+        // this.draw();
         return false;
     }
-    public move(points:Array<Array<number>>, blockSize:number){
-        // console.log("MOVING");
-        if(this.step == points.length){
-            //end but keep drawing.
-            this.draw();
-            console.log("END");
-        }else{
-            //if steps is not more then the points
-            //move to point
-            let x = (points[this.step][0] + 1) * blockSize - 10;
-            console.log(points[this.step])
-            let y = (points[this.step][1] + 1) * blockSize - 10;
-            ;
+
+    public move(points:Array<Array<number>>){
+        //check if the length is the same 
+        if(this.step != points.length){
+            let x = (points[this.step][0] + 1) * this.blockSize - 10;
+            let y = (points[this.step][1] + 1) * this.blockSize - 10;
+
             if(this.moveToPoint(x,y)){
-                //we are there
                 this.step++;
             }
         }
-        // for(let i = 0; i < points.length; i++){
-        //     // for(let j = 0; j < points[i].length; j++){
-
-        //     // }
-        // }
-        //get array
+        //always keep drawing
+        this.draw();
         
 
     }

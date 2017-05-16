@@ -13,9 +13,9 @@ class AStar{
 
     private path:any;
 
-    constructor(matrix:Array<Array<number>>){
-        this.startX = 0;
-        this.startY = 0;
+    constructor(matrix:Array<Array<number>>, pos:Pos){
+        this.startX = pos.x;
+        this.startY = pos.y;
         this.endX = 2;
         this.endY = 2
         //setup

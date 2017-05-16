@@ -20,10 +20,9 @@ class Board{
         this.width = column*this.blockSize;
         this.height = rows*this.blockSize;
         this.padding = 10;
-        //draw on board has to be above drawboard because it then draws it underneed it.
-        // this.drawOnBoard();
+
         this.drawBoard();
-        this.drawCar();
+        // this.drawCar();
         
     }
 
@@ -45,18 +44,6 @@ class Board{
         this.game.context.stroke();
         this.game.context.closePath();
     }
-
-    private drawCar(){
-        this.car = new Car(this.game,this.blockSize / 2 + this.padding, this.blockSize / 2 + this.padding);
-        this.car.draw();
-    }
-
-    public moveCar(path:Array<Array<number>>){
-        this.car.move(path, this.blockSize);
-        // console.log("Move Car")
-
-    }
-
     private drawOnBoard(){
         for(var i  = 0; i < this.matrix.length; i++){
             for(var j = 0; j < this.matrix[i].length; j++){

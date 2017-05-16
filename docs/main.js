@@ -1,7 +1,7 @@
 var AStar = (function () {
-    function AStar(matrix) {
-        this.startX = 0;
-        this.startY = 0;
+    function AStar(matrix, pos) {
+        this.startX = pos.x;
+        this.startY = pos.y;
         this.endX = 2;
         this.endY = 2;
         this.matrix = matrix;
@@ -43,7 +43,6 @@ var Board = (function () {
         this.height = rows * this.blockSize;
         this.padding = 10;
         this.drawBoard();
-        this.drawCar();
     }
     Board.prototype.drawBoard = function () {
         this.drawOnBoard();
@@ -60,13 +59,6 @@ var Board = (function () {
         this.game.context.stroke();
         this.game.context.closePath();
     };
-    Board.prototype.drawCar = function () {
-        this.car = new Car(this.game, this.blockSize / 2 + this.padding, this.blockSize / 2 + this.padding);
-        this.car.draw();
-    };
-    Board.prototype.moveCar = function (path) {
-        this.car.move(path, this.blockSize);
-    };
     Board.prototype.drawOnBoard = function () {
         for (var i = 0; i < this.matrix.length; i++) {
             for (var j = 0; j < this.matrix[i].length; j++) {
@@ -79,12 +71,13 @@ var Board = (function () {
     return Board;
 }());
 var Car = (function () {
-    function Car(game, x, y) {
+    function Car(game, startPos, blockSize) {
         this.step = 1;
         this.radius = 10;
         this.game = game;
-        this.x = x;
-        this.y = y;
+        this.blockSize = blockSize;
+        this.x = blockSize / 2 + 10 + blockSize * startPos.x;
+        this.y = blockSize / 2 + 10 + blockSize * startPos.y;
     }
     Car.prototype.draw = function () {
         this.game.context.beginPath();
@@ -122,26 +115,19 @@ var Car = (function () {
             }
         }
         if (yDone && xDone) {
-            this.draw();
             return true;
         }
-        this.draw();
         return false;
     };
-    Car.prototype.move = function (points, blockSize) {
-        if (this.step == points.length) {
-            this.draw();
-            console.log("END");
-        }
-        else {
-            var x = (points[this.step][0] + 1) * blockSize - 10;
-            console.log(points[this.step]);
-            var y = (points[this.step][1] + 1) * blockSize - 10;
-            ;
+    Car.prototype.move = function (points) {
+        if (this.step != points.length) {
+            var x = (points[this.step][0] + 1) * this.blockSize - 10;
+            var y = (points[this.step][1] + 1) * this.blockSize - 10;
             if (this.moveToPoint(x, y)) {
                 this.step++;
             }
         }
+        this.draw();
     };
     return Car;
 }());
@@ -155,16 +141,20 @@ var Game = (function () {
             [1, 0, 1, 0, 1],
             [0, 0, 0, 0, 0]
         ];
-        this.board = new Board(this, matrix, 40);
-        this.aStar = new AStar(matrix);
+        var blockSize = 40;
+        var padding = 10;
+        var startPos = new Pos(1, 1);
+        this.board = new Board(this, matrix, blockSize);
+        this.aStar = new AStar(matrix, startPos);
         this.path = this.aStar.findPath();
+        this.car = new Car(this, startPos, blockSize);
         requestAnimationFrame(function () { return _this.gameLoop(); });
     }
     Game.prototype.gameLoop = function () {
         var _this = this;
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.board.drawBoard();
-        this.board.moveCar(this.path);
+        this.car.move(this.path);
         requestAnimationFrame(function () { return _this.gameLoop(); });
     };
     return Game;
@@ -172,4 +162,11 @@ var Game = (function () {
 window.addEventListener("load", function () {
     new Game();
 });
+var Pos = (function () {
+    function Pos(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    return Pos;
+}());
 //# sourceMappingURL=main.js.map
