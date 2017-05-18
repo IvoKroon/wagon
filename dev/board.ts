@@ -23,11 +23,15 @@ class Board{
 
         this.width = column*this.blockSize;
         this.height = rows*this.blockSize;
-        this.padding = 10;
+        this.padding = 0;
  
         this.showGrid = showGrid;
         // this.drawCar();
         this.drawBlocks = drawBlocks;
+        
+    }
+
+    calcGridLoc(){
         
     }
 

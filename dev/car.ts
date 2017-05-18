@@ -12,8 +12,8 @@ class Car{
 
         this.blockSize = blockSize;
 
-        this.x = blockSize / 2 + 10 + blockSize * startPos.x;
-        this.y = blockSize / 2 + 10 + blockSize * startPos.y; 
+        this.x = blockSize / 2 + blockSize * startPos.x;
+        this.y = blockSize / 2 + blockSize * startPos.y; 
                
     }
 
@@ -62,8 +62,8 @@ class Car{
     public move(points:Array<Array<number>>){
         //check if the length is the same 
         if(this.step != points.length){
-            let x = (points[this.step][0] + 1) * this.blockSize - 10;
-            let y = (points[this.step][1] + 1) * this.blockSize - 10;
+            let x = (points[this.step][0] + 1) * this.blockSize - this.blockSize / 2;
+            let y = (points[this.step][1] + 1) * this.blockSize - this.blockSize / 2;
 
             if(this.moveToPoint(x,y)){
                 this.step++;

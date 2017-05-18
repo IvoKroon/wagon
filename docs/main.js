@@ -42,10 +42,12 @@ var Board = (function () {
         var column = matrix[0].length;
         this.width = column * this.blockSize;
         this.height = rows * this.blockSize;
-        this.padding = 10;
+        this.padding = 0;
         this.showGrid = showGrid;
         this.drawBlocks = drawBlocks;
     }
+    Board.prototype.calcGridLoc = function () {
+    };
     Board.prototype.draw = function () {
         this.drawObstacle();
         if (this.showGrid) {
@@ -86,8 +88,8 @@ var Car = (function () {
         this.radius = 10;
         this.game = game;
         this.blockSize = blockSize;
-        this.x = blockSize / 2 + 10 + blockSize * startPos.x;
-        this.y = blockSize / 2 + 10 + blockSize * startPos.y;
+        this.x = blockSize / 2 + blockSize * startPos.x;
+        this.y = blockSize / 2 + blockSize * startPos.y;
     }
     Car.prototype.draw = function () {
         this.game.context.beginPath();
@@ -128,8 +130,8 @@ var Car = (function () {
     };
     Car.prototype.move = function (points) {
         if (this.step != points.length) {
-            var x = (points[this.step][0] + 1) * this.blockSize - 10;
-            var y = (points[this.step][1] + 1) * this.blockSize - 10;
+            var x = (points[this.step][0] + 1) * this.blockSize - this.blockSize / 2;
+            var y = (points[this.step][1] + 1) * this.blockSize - this.blockSize / 2;
             if (this.moveToPoint(x, y)) {
                 this.step++;
             }
@@ -148,18 +150,65 @@ var Game = (function () {
             [1, 0, 0, 0, 0],
             [0, 0, 1, 0, 0]
         ];
-        var matrix = this.drawMatrix(9, 9);
+        var matrix = this.drawMatrix(10, 10);
         matrix[0][1] = 1;
         matrix[1][1] = 1;
         matrix[2][1] = 1;
         matrix[3][1] = 1;
         matrix[4][1] = 1;
         matrix[5][1] = 1;
+        matrix[6][1] = 1;
+        matrix[7][1] = 1;
+        matrix[8][1] = 1;
+        matrix[7][3] = 1;
+        matrix[8][4] = 1;
+        matrix[8][5] = 1;
+        matrix[8][3] = 1;
+        matrix[9][3] = 1;
+        matrix[9][4] = 1;
+        matrix[9][5] = 1;
+        matrix[2][7] = 1;
+        matrix[3][7] = 1;
+        matrix[4][7] = 1;
+        matrix[5][7] = 1;
+        matrix[6][7] = 1;
+        matrix[7][7] = 1;
+        matrix[8][7] = 1;
+        matrix[9][7] = 1;
+        matrix[0][2] = 1;
+        matrix[0][3] = 1;
+        matrix[0][4] = 1;
+        matrix[0][5] = 1;
+        matrix[0][6] = 1;
+        matrix[0][7] = 1;
+        matrix[0][8] = 1;
+        matrix[0][9] = 1;
+        matrix[1][5] = 1;
+        matrix[2][5] = 1;
+        matrix[3][5] = 1;
+        matrix[4][5] = 1;
+        matrix[1][4] = 1;
+        matrix[2][4] = 1;
+        matrix[3][4] = 1;
+        matrix[4][4] = 1;
+        matrix[1][3] = 1;
+        matrix[2][3] = 1;
+        matrix[3][3] = 1;
+        matrix[4][3] = 1;
+        matrix[1][9] = 1;
+        matrix[2][9] = 1;
+        matrix[3][9] = 1;
+        matrix[4][9] = 1;
+        matrix[5][9] = 1;
+        matrix[6][9] = 1;
+        matrix[7][9] = 1;
+        matrix[8][9] = 1;
+        matrix[9][9] = 1;
         this.arrayToString(matrix);
         var blockSize = 40;
         var padding = 10;
         var startPos = new Pos(0, 0);
-        var endPos = new Pos(4, 0);
+        var endPos = new Pos(8, 8);
         this.board = new Board(this, matrix, blockSize, true, true);
         this.aStar = new AStar(matrix, startPos, endPos);
         this.path = this.aStar.findPath();
