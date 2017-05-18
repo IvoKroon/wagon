@@ -32,7 +32,6 @@ class Car{
         if(this.x == endX){
             xDone = true;
         }else{
-            console.log("X = " + this.x + " - " + endX);
             if(this.x - endX > 0){
                 this.x--;
             }else{
@@ -41,10 +40,10 @@ class Car{
         }
 
         if(this.y == endY){
-            console.log("Y = " + this.y + " - " + endY);
+            // console.log("Y = " + this.y + " - " + endY);
             yDone = true;
         }else{
-            console.log("Y = " + this.y + " - " + endY);
+            // console.log("Y = " + this.y + " - " + endY);
             if(this.y - endY > 0){
                 this.y--;
             }else{

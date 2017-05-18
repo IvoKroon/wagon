@@ -13,11 +13,11 @@ class AStar{
 
     private path:any;
 
-    constructor(matrix:Array<Array<number>>, pos:Pos){
-        this.startX = pos.x;
-        this.startY = pos.y;
-        this.endX = 2;
-        this.endY = 2
+    constructor(matrix:Array<Array<number>>, start:Pos, end:Pos){
+        this.startX = start.x;
+        this.startY = start.y;
+        this.endX = end.x;
+        this.endY = end.y;
         //setup
         this.matrix = matrix;
 
@@ -25,6 +25,9 @@ class AStar{
 
         this.finder = new PF.AStarFinder();
         // this.findPath();
+    }
+    goTo(){
+        
     }
 
     findPath(){

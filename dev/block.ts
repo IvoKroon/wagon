@@ -3,13 +3,13 @@ class Block{
     private x:number;
     private y:number;
     private game:Game;
+    private invisible:boolean;
 
     constructor(game:Game,size:number, x:number, y:number){
         this.size = size;
         this.x = x;
         this.y = y;
         this.game = game;
-        this.draw();
     }
 
     draw(){

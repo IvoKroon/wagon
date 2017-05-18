@@ -7,8 +7,12 @@ class Board{
     private matrix:Array<Array<number>>;
     private blockSize:number;
     private car:Car;
+    private showGrid:Boolean;
 
-    constructor(game:Game, matrix:Array<Array<number>>, blockSize:number){
+    private drawBlocks:boolean;
+
+
+    constructor(game:Game, matrix:Array<Array<number>>, blockSize:number,showGrid:Boolean, drawBlocks:boolean){
         this.game = game;
         
         this.matrix = matrix;
@@ -20,14 +24,22 @@ class Board{
         this.width = column*this.blockSize;
         this.height = rows*this.blockSize;
         this.padding = 10;
-
-        this.drawBoard();
+ 
+        this.showGrid = showGrid;
         // this.drawCar();
+        this.drawBlocks = drawBlocks;
         
     }
 
-    public drawBoard(){
-        this.drawOnBoard();
+    public draw(){
+        this.drawObstacle();
+        if(this.showGrid){
+            this.drawBoard();
+        }
+    }
+
+    private drawBoard(){
+        
         this.game.context.beginPath();
         for (let x = 0; x <= this.width; x += this.blockSize) {
             this.game.context.moveTo(0.5 + x + this.padding, this.padding);
@@ -44,11 +56,14 @@ class Board{
         this.game.context.stroke();
         this.game.context.closePath();
     }
-    private drawOnBoard(){
+    private drawObstacle(){
         for(var i  = 0; i < this.matrix.length; i++){
             for(var j = 0; j < this.matrix[i].length; j++){
                 if(this.matrix[i][j] == 1){
-                    new Block(this.game,this.blockSize, j*this.blockSize + this.padding, i*40 + this.padding).draw(); 
+                    let block = new Block(this.game,this.blockSize, j*this.blockSize + this.padding, i*40 + this.padding);
+                    if(this.drawBlocks){
+                         block.draw(); 
+                    }
                 }
             }
         }
