@@ -80,8 +80,6 @@ class Game {
         matrix[8][9] = 1;
         matrix[9][9] = 1;
 
-
-
         this.arrayToString(matrix);
         
         let blockSize:number = 40;
@@ -89,15 +87,41 @@ class Game {
         let startPos = new Pos(0,0);
         let endPos = new Pos(8,8);
 
+        let macLocation = new Pos(4,7);
+        let wc = new Pos(8,8);
+
         this.board = new Board(this,matrix,blockSize,true, true);
         //load the image
-        this.aStar = new AStar(matrix, startPos, endPos);
+        this.aStar = new AStar(matrix, startPos, wc);
         this.path =  this.aStar.findPath();
         this.car = new Car(this,startPos, blockSize);
+        //click on the grid for location
+        window.addEventListener("click", (e) =>{
+            this.car.reset();
+            let pos = this.getXYPostion(e.clientX, e.clientY, blockSize);
+            this.aStar = new AStar(matrix, this.getXYPostion(this.car.getX(), this.car.getY(), blockSize), pos);
+            this.path = this.aStar.findPath();
+            console.log("LENGTH = "+this.path.length);
+            if(this.path.length <= 0 ){
+                let currentPos = this.getXYPostion(this.car.getX(),this.car.getY(), blockSize);
+                console.log("CURRENT POS"+currentPos);
+                this.path = [[currentPos.x,currentPos.y]];
+                console.log("PATH = "+this.path);
+            }
+            console.log("PATH "+this.path);
+        });
+
+        this.getXYPostion(80,80,blockSize);
 
         requestAnimationFrame(() => this.gameLoop());
     }
-
+    //get the location on the grid
+    getXYPostion(x:number,y:number, blockSize:number):Pos{
+        let xPos = Math.floor(x / blockSize);
+        let yPos = Math.floor(y / blockSize);
+        // console.log("X = " + xPos + " " + " Y = " + yPos);
+        return new Pos(xPos,yPos);
+    }
     // drawBlockOnMatrix(e:event){
 
     // }
@@ -111,17 +135,14 @@ class Game {
             }
             matrix.push(row);
         }
-        console.log(matrix);
         return matrix;
     }
 
     arrayToString(matrix:Array<Array<number>>){
         var string = "[";
         for(var i = 0; i < matrix.length; i++){
-            console.log(i);
             var row = "["
             row += matrix[i].join(',');
-            console.log(row);
         
             if(i != matrix.length - 1){
                 row += "],";
@@ -132,7 +153,6 @@ class Game {
             string += row;
         }
         string += "];"
-        console.log(string)
     }
 
     

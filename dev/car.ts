@@ -5,6 +5,7 @@ class Car{
     private game:Game;
     private step:number = 1;
     private blockSize:number;
+    private speed:number;
 
     constructor(game:Game, startPos:Pos, blockSize:number){
         this.radius = 10;
@@ -14,8 +15,20 @@ class Car{
 
         this.x = blockSize / 2 + blockSize * startPos.x;
         this.y = blockSize / 2 + blockSize * startPos.y; 
+        
+        //speed
+        this.speed = 5;
                
     }
+
+    getX(){
+        return this.x;
+    }
+
+    getY(){
+        return this.y;
+    }
+
 
     draw(){
         this.game.context.beginPath();
@@ -33,9 +46,9 @@ class Car{
             xDone = true;
         }else{
             if(this.x - endX > 0){
-                this.x--;
+                this.x -= this.speed;
             }else{
-                this.x++;
+                this.x += this.speed;
             }
         }
 
@@ -45,9 +58,9 @@ class Car{
         }else{
             // console.log("Y = " + this.y + " - " + endY);
             if(this.y - endY > 0){
-                this.y--;
+                this.y -= this.speed;
             }else{
-                this.y++;
+                this.y += this.speed;
             }
         }
 
@@ -58,8 +71,12 @@ class Car{
         // this.draw();
         return false;
     }
+    public reset(){
+        this.step = 1;
+    }
 
     public move(points:Array<Array<number>>){
+        console.log(this.step);
         //check if the length is the same 
         if(this.step != points.length){
             let x = (points[this.step][0] + 1) * this.blockSize - this.blockSize / 2;

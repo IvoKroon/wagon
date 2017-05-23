@@ -90,7 +90,14 @@ var Car = (function () {
         this.blockSize = blockSize;
         this.x = blockSize / 2 + blockSize * startPos.x;
         this.y = blockSize / 2 + blockSize * startPos.y;
+        this.speed = 5;
     }
+    Car.prototype.getX = function () {
+        return this.x;
+    };
+    Car.prototype.getY = function () {
+        return this.y;
+    };
     Car.prototype.draw = function () {
         this.game.context.beginPath();
         this.game.context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
@@ -106,10 +113,10 @@ var Car = (function () {
         }
         else {
             if (this.x - endX > 0) {
-                this.x--;
+                this.x -= this.speed;
             }
             else {
-                this.x++;
+                this.x += this.speed;
             }
         }
         if (this.y == endY) {
@@ -117,10 +124,10 @@ var Car = (function () {
         }
         else {
             if (this.y - endY > 0) {
-                this.y--;
+                this.y -= this.speed;
             }
             else {
-                this.y++;
+                this.y += this.speed;
             }
         }
         if (yDone && xDone) {
@@ -128,7 +135,11 @@ var Car = (function () {
         }
         return false;
     };
+    Car.prototype.reset = function () {
+        this.step = 1;
+    };
     Car.prototype.move = function (points) {
+        console.log(this.step);
         if (this.step != points.length) {
             var x = (points[this.step][0] + 1) * this.blockSize - this.blockSize / 2;
             var y = (points[this.step][1] + 1) * this.blockSize - this.blockSize / 2;
@@ -209,12 +220,34 @@ var Game = (function () {
         var padding = 10;
         var startPos = new Pos(0, 0);
         var endPos = new Pos(8, 8);
+        var macLocation = new Pos(4, 7);
+        var wc = new Pos(8, 8);
         this.board = new Board(this, matrix, blockSize, true, true);
-        this.aStar = new AStar(matrix, startPos, endPos);
+        this.aStar = new AStar(matrix, startPos, wc);
         this.path = this.aStar.findPath();
         this.car = new Car(this, startPos, blockSize);
+        window.addEventListener("click", function (e) {
+            _this.car.reset();
+            var pos = _this.getXYPostion(e.clientX, e.clientY, blockSize);
+            _this.aStar = new AStar(matrix, _this.getXYPostion(_this.car.getX(), _this.car.getY(), blockSize), pos);
+            _this.path = _this.aStar.findPath();
+            console.log("LENGTH = " + _this.path.length);
+            if (_this.path.length <= 0) {
+                var currentPos = _this.getXYPostion(_this.car.getX(), _this.car.getY(), blockSize);
+                console.log("CURRENT POS" + currentPos);
+                _this.path = [[currentPos.x, currentPos.y]];
+                console.log("PATH = " + _this.path);
+            }
+            console.log("PATH " + _this.path);
+        });
+        this.getXYPostion(80, 80, blockSize);
         requestAnimationFrame(function () { return _this.gameLoop(); });
     }
+    Game.prototype.getXYPostion = function (x, y, blockSize) {
+        var xPos = Math.floor(x / blockSize);
+        var yPos = Math.floor(y / blockSize);
+        return new Pos(xPos, yPos);
+    };
     Game.prototype.drawMatrix = function (width, height) {
         var matrix = [];
         for (var i = 0; i < height; i++) {
@@ -224,16 +257,13 @@ var Game = (function () {
             }
             matrix.push(row);
         }
-        console.log(matrix);
         return matrix;
     };
     Game.prototype.arrayToString = function (matrix) {
         var string = "[";
         for (var i = 0; i < matrix.length; i++) {
-            console.log(i);
             var row = "[";
             row += matrix[i].join(',');
-            console.log(row);
             if (i != matrix.length - 1) {
                 row += "],";
             }
@@ -243,7 +273,6 @@ var Game = (function () {
             string += row;
         }
         string += "];";
-        console.log(string);
     };
     Game.prototype.gameLoop = function () {
         var _this = this;
