@@ -34,6 +34,9 @@ class Board{
     calcGridLoc(){
         
     }
+    update(matrix:Array<Array<number>>){
+        this.matrix = matrix;
+    }
 
     public draw(){
         this.drawObstacle();
@@ -64,7 +67,7 @@ class Board{
         for(var i  = 0; i < this.matrix.length; i++){
             for(var j = 0; j < this.matrix[i].length; j++){
                 if(this.matrix[i][j] == 1){
-                    let block = new Block(this.game,this.blockSize, j*this.blockSize + this.padding, i*40 + this.padding);
+                    let block = new Block(this.game,this.blockSize, j*this.blockSize + this.padding, i*this.blockSize + this.padding);
                     if(this.drawBlocks){
                          block.draw(); 
                     }
