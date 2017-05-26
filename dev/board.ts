@@ -46,7 +46,7 @@ class Board{
     }
 
     private drawBoard(){
-        
+        this.game.context.save();
         this.game.context.beginPath();
         for (let x = 0; x <= this.width; x += this.blockSize) {
             this.game.context.moveTo(0.5 + x + this.padding, this.padding);
@@ -59,9 +59,11 @@ class Board{
             this.game.context.lineTo(this.width + this.padding, 0.5 + y + this.padding);
         }
 
-        this.game.context.strokeStyle = "black";
+        this.game.context.strokeStyle = "rgba(0, 0, 0, 0.3)";
         this.game.context.stroke();
+        // this.game.context.globalAlpha = 0.4;
         this.game.context.closePath();
+        this.game.context.restore();
     }
     private drawObstacle(){
         for(var i  = 0; i < this.matrix.length; i++){
