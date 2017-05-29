@@ -27,9 +27,13 @@ class Game {
         // this.car = new Car(this,startPos, this.blockSize);
 
         this.carList.push(
-            new Car(this, new Pos(8,4), new Pos(9,11), this.blockSize),
-            new Car(this, new Pos(9,4), new Pos(9,10), this.blockSize),
-            new Car(this, new Pos(7,4), new Pos(9,15), this.blockSize)
+            new Car(this, new Pos(8,4), new Pos(16,1), this.blockSize),
+            new Car(this, new Pos(9,4), new Pos(6,24), this.blockSize),
+            new Car(this, new Pos(25,2), new Pos(14,9), this.blockSize),
+            new Car(this, new Pos(36,1), new Pos(15,16), this.blockSize),
+            new Car(this, new Pos(7,4), new Pos(23,18), this.blockSize),
+            new Car(this, new Pos(30,5), new Pos(6,8), this.blockSize),
+            new Car(this, new Pos(29,10), new Pos(12,20), this.blockSize)
             );
         this.load();
 
@@ -68,7 +72,7 @@ class Game {
     }
 
     public drawObstacle(pos:Pos){
-        console.log(pos);
+        // console.log(pos);
 
         this.matrix[pos.y][pos.x] = this.matrix[pos.y][pos.x] == 1 ?0 :1; 
         this.board.update(this.matrix);

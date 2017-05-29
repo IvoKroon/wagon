@@ -160,10 +160,12 @@ var Car = (function () {
         this.step = 1;
     };
     Car.prototype.calcPath = function () {
-        console.log("CALCULATE NEW PATH");
         this.aStar = new AStar(this.game.matrix, Util.getXYPostion(this.x, this.y, this.blockSize), this.getEndPos());
         this.path = this.aStar.findPath();
         if (this.path.length <= 1) {
+            if (this.path.length == 0) {
+                console.log("CRASH");
+            }
             this.done = true;
         }
         else {
@@ -179,7 +181,6 @@ var Car = (function () {
         this.previousY = this.y;
         if (this.moveToPoint()) {
             if (!this.done) {
-                console.log(this.x + " - " + this.endPos.x);
                 this.calcPath();
             }
         }
@@ -198,7 +199,7 @@ var Game = (function () {
         var startPos = new Pos(9, 2);
         var endPos = new Pos(8, 8);
         this.board = new Board(this, this.matrix, this.blockSize, true, true);
-        this.carList.push(new Car(this, new Pos(8, 4), new Pos(9, 11), this.blockSize), new Car(this, new Pos(9, 4), new Pos(9, 10), this.blockSize), new Car(this, new Pos(7, 4), new Pos(9, 15), this.blockSize));
+        this.carList.push(new Car(this, new Pos(8, 4), new Pos(16, 1), this.blockSize), new Car(this, new Pos(9, 4), new Pos(6, 24), this.blockSize), new Car(this, new Pos(25, 2), new Pos(14, 9), this.blockSize), new Car(this, new Pos(36, 1), new Pos(15, 16), this.blockSize), new Car(this, new Pos(7, 4), new Pos(23, 18), this.blockSize), new Car(this, new Pos(30, 5), new Pos(6, 8), this.blockSize), new Car(this, new Pos(29, 10), new Pos(12, 20), this.blockSize));
         this.load();
         window.addEventListener("mousedown", function (e) { return _this.getLocation(e); });
         requestAnimationFrame(function () { return _this.gameLoop(); });
@@ -218,7 +219,6 @@ var Game = (function () {
         this.drawObstacle(pos);
     };
     Game.prototype.drawObstacle = function (pos) {
-        console.log(pos);
         this.matrix[pos.y][pos.x] = this.matrix[pos.y][pos.x] == 1 ? 0 : 1;
         this.board.update(this.matrix);
     };

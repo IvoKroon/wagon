@@ -112,7 +112,6 @@ class Car{
 
     private calcPath(){
         //cal a new path
-        console.log("CALCULATE NEW PATH");
         this.aStar = new AStar(
                             this.game.matrix, 
                             Util.getXYPostion(this.x,this.y,this.blockSize),
@@ -121,9 +120,14 @@ class Car{
 
         //We are there.
         if(this.path.length <= 1){
-            // console.log("We are on the location!");
+            if(this.path.length == 0){
+                //TODO : remove this.
+                // See notes
+                console.log("CRASH");
+            }
             this.done = true;
         }else{
+
             //get the position
             let pos:Pos = new Pos(this.path[1][0], this.path[1][1]);
             //save the next direction
@@ -136,22 +140,15 @@ class Car{
         
     }
 
-    // private drawObstaclForSelf(){
-        
-    // }
-
     public move(){
         
         this.previousX = this.x;
         this.previousY = this.y;
 
-        
         if(this.moveToPoint()){
-            // We are there
-            // Now we need to look if there is somebody on the path.
             
             if(!this.done){
-                console.log(this.x + " - " + this.endPos.x);
+                // console.log(this.x + " - " + this.endPos.x);
                 this.calcPath();
             }
         }
