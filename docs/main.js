@@ -12,7 +12,6 @@ var AStar = (function () {
     };
     AStar.prototype.findPath = function () {
         var path = this.finder.findPath(this.startX, this.startY, this.endX, this.endY, this.grid);
-        console.log(path);
         return path;
     };
     return AStar;
@@ -88,20 +87,37 @@ var Board = (function () {
     return Board;
 }());
 var Car = (function () {
-    function Car(game, startPos, blockSize) {
+    function Car(game, startPos, endPos, blockSize) {
         this.step = 1;
+        this.done = false;
         this.radius = 10;
         this.game = game;
         this.blockSize = blockSize;
         this.x = blockSize / 2 + blockSize * startPos.x;
         this.y = blockSize / 2 + blockSize * startPos.y;
-        this.speed = 5;
+        this.previousX = this.x;
+        this.previousY = this.y;
+        this.endPos = endPos;
+        this.speed = 1;
+        this.calcPath();
     }
     Car.prototype.getX = function () {
         return this.x;
     };
     Car.prototype.getY = function () {
         return this.y;
+    };
+    Car.prototype.getPreviousX = function () {
+        return this.previousX;
+    };
+    Car.prototype.getPreviousY = function () {
+        return this.previousY;
+    };
+    Car.prototype.getEndPos = function () {
+        return this.endPos;
+    };
+    Car.prototype.setPath = function (path) {
+        this.path = path;
     };
     Car.prototype.draw = function () {
         this.game.context.beginPath();
@@ -110,29 +126,29 @@ var Car = (function () {
         this.game.context.fill();
         this.game.context.closePath();
     };
-    Car.prototype.moveToPoint = function (endX, endY) {
+    Car.prototype.moveToPoint = function () {
         var xDone = false;
         var yDone = false;
-        if (this.x == endX) {
-            xDone = true;
-        }
-        else {
-            if (this.x - endX > 0) {
-                this.x -= this.speed;
-            }
-            else {
-                this.x += this.speed;
-            }
-        }
-        if (this.y == endY) {
+        if (this.y == this.nextY) {
             yDone = true;
         }
         else {
-            if (this.y - endY > 0) {
+            if (this.y - this.nextY > 0) {
                 this.y -= this.speed;
             }
             else {
                 this.y += this.speed;
+            }
+        }
+        if (this.x == this.nextX) {
+            xDone = true;
+        }
+        else {
+            if (this.x - this.nextX > 0) {
+                this.x -= this.speed;
+            }
+            else {
+                this.x += this.speed;
             }
         }
         if (yDone && xDone) {
@@ -143,13 +159,28 @@ var Car = (function () {
     Car.prototype.reset = function () {
         this.step = 1;
     };
-    Car.prototype.move = function (points) {
-        console.log(this.step);
-        if (this.step != points.length) {
-            var x = (points[this.step][0] + 1) * this.blockSize - this.blockSize / 2;
-            var y = (points[this.step][1] + 1) * this.blockSize - this.blockSize / 2;
-            if (this.moveToPoint(x, y)) {
-                this.step++;
+    Car.prototype.calcPath = function () {
+        console.log("CALCULATE NEW PATH");
+        this.aStar = new AStar(this.game.matrix, Util.getXYPostion(this.x, this.y, this.blockSize), this.getEndPos());
+        this.path = this.aStar.findPath();
+        if (this.path.length <= 1) {
+            this.done = true;
+        }
+        else {
+            var pos = new Pos(this.path[1][0], this.path[1][1]);
+            this.nextX = pos.x * this.blockSize + this.blockSize / 2;
+            this.nextY = pos.y * this.blockSize + this.blockSize / 2;
+            this.game.drawObstacle(Util.getXYPostion(this.previousX, this.previousY, this.blockSize));
+            this.game.drawObstacle(Util.getXYPostion(this.nextX, this.nextY, this.blockSize));
+        }
+    };
+    Car.prototype.move = function () {
+        this.previousX = this.x;
+        this.previousY = this.y;
+        if (this.moveToPoint()) {
+            if (!this.done) {
+                console.log(this.x + " - " + this.endPos.x);
+                this.calcPath();
             }
         }
         this.draw();
@@ -159,40 +190,37 @@ var Car = (function () {
 var Game = (function () {
     function Game() {
         var _this = this;
+        this.carList = [];
         this.canvas = document.getElementById("canvas");
         this.context = this.canvas.getContext("2d");
         this.matrix = [[0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
         this.blockSize = 20;
-        var padding = 10;
         var startPos = new Pos(9, 2);
         var endPos = new Pos(8, 8);
-        this.board = new Board(this, this.matrix, this.blockSize, false, false);
-        this.aStar = new AStar(this.matrix, startPos, endPos);
-        this.path = this.aStar.findPath();
-        this.car = new Car(this, startPos, this.blockSize);
-        window.addEventListener("mousedown", function (e) { return _this.goToLocation(e); });
-        this.getXYPostion(80, 80, this.blockSize);
+        this.board = new Board(this, this.matrix, this.blockSize, true, true);
+        this.carList.push(new Car(this, new Pos(8, 4), new Pos(9, 11), this.blockSize), new Car(this, new Pos(9, 4), new Pos(9, 10), this.blockSize), new Car(this, new Pos(7, 4), new Pos(9, 15), this.blockSize));
+        this.load();
+        window.addEventListener("mousedown", function (e) { return _this.getLocation(e); });
         requestAnimationFrame(function () { return _this.gameLoop(); });
     }
-    Game.prototype.goToLocation = function (e) {
-        this.car.reset();
-        var pos = this.getXYPostion(e.clientX, e.clientY, this.blockSize);
-        this.aStar = new AStar(this.matrix, this.getXYPostion(this.car.getX(), this.car.getY(), this.blockSize), pos);
-        this.path = this.aStar.findPath();
-        if (this.path.length <= 0) {
-            var currentPos = this.getXYPostion(this.car.getX(), this.car.getY(), this.blockSize);
-            this.path = [[currentPos.x, currentPos.y]];
+    Game.prototype.load = function () {
+        for (var _i = 0, _a = this.carList; _i < _a.length; _i++) {
+            var car = _a[_i];
+            this.drawObstacle(Util.getXYPostion(car.getX(), car.getY(), this.blockSize));
         }
     };
+    Game.prototype.getLocation = function (e) {
+        var pos = Util.getXYPostion(e.clientX, e.clientY, this.blockSize);
+        console.log(pos);
+    };
     Game.prototype.drawBlockOnBoard = function (e) {
-        var pos = this.getXYPostion(e.clientX, e.clientY, this.blockSize);
+        var pos = Util.getXYPostion(e.clientX, e.clientY, this.blockSize);
+        this.drawObstacle(pos);
+    };
+    Game.prototype.drawObstacle = function (pos) {
+        console.log(pos);
         this.matrix[pos.y][pos.x] = this.matrix[pos.y][pos.x] == 1 ? 0 : 1;
         this.board.update(this.matrix);
-    };
-    Game.prototype.getXYPostion = function (x, y, blockSize) {
-        var xPos = Math.floor(x / blockSize);
-        var yPos = Math.floor(y / blockSize);
-        return new Pos(xPos, yPos);
     };
     Game.prototype.drawMatrix = function (width, height) {
         var matrix = [];
@@ -225,7 +253,10 @@ var Game = (function () {
         var _this = this;
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.board.draw();
-        this.car.move(this.path);
+        for (var _i = 0, _a = this.carList; _i < _a.length; _i++) {
+            var car = _a[_i];
+            car.move();
+        }
         requestAnimationFrame(function () { return _this.gameLoop(); });
     };
     return Game;
@@ -239,5 +270,15 @@ var Pos = (function () {
         this.y = y;
     }
     return Pos;
+}());
+var Util = (function () {
+    function Util() {
+    }
+    Util.getXYPostion = function (x, y, blockSize) {
+        var xPos = Math.floor(x / blockSize);
+        var yPos = Math.floor(y / blockSize);
+        return new Pos(xPos, yPos);
+    };
+    return Util;
 }());
 //# sourceMappingURL=main.js.map

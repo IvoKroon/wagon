@@ -32,7 +32,7 @@ class AStar{
 
     findPath(){
         var path = this.finder.findPath(this.startX, this.startY, this.endX, this.endY, this.grid);
-        console.log(path);
+        // console.log(path);
         return path;
     }
 }
