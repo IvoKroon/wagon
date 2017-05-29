@@ -77,6 +77,7 @@ class Car{
         this.game.context.closePath();
     }
 
+    //move to an point
     private moveToPoint(){
         let xDone = false;
         let yDone = false;
@@ -106,10 +107,12 @@ class Car{
         }
         return false;
     }
+
     public reset(){
         this.step = 1;
     }
 
+    //calc the path
     private calcPath(){
         //cal a new path
         this.aStar = new AStar(
@@ -121,7 +124,7 @@ class Car{
         //We are there.
         if(this.path.length <= 1){
             if(this.path.length == 0){
-                //TODO : remove this.
+                //TODO : remove this crash.
                 // See notes
                 console.log("CRASH");
             }
@@ -140,6 +143,7 @@ class Car{
         
     }
 
+    //move to an point
     public move(){
         
         this.previousX = this.x;
@@ -148,7 +152,6 @@ class Car{
         if(this.moveToPoint()){
             
             if(!this.done){
-                // console.log(this.x + " - " + this.endPos.x);
                 this.calcPath();
             }
         }
