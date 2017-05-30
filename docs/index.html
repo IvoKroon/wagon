@@ -20,7 +20,18 @@
     </style>
   </head>
   <body>
+      <script src="/socket.io/socket.io.js"></script>
       <canvas width="1200" height="700" id="canvas"></canvas>
+      <script>
+    var socket = io();
+    //    var message = "HELLO";
+
+    socket.on('get_message', function(msg){
+        console.log(msg);
+    });
+
+</script>
+      <!--<script src="/socket.io/socket.io.js"></script>-->
       <script src="pathfinding/pathfinding.js"></script>
       <script src='main.js'></script>
   </body>

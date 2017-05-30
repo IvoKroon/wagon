@@ -9,6 +9,7 @@ class Game {
     private blockSize:number;
     
     private carList:Array<Car> = [];
+    private socketHandler:SocketHandler;
 
     //loader
     constructor(){
@@ -21,21 +22,24 @@ class Game {
         let startPos = new Pos(9,2);
         let endPos = new Pos(8,8);
 
-        this.board = new Board(this,this.matrix,this.blockSize,true, true);
+        this.board = new Board(this,this.matrix,this.blockSize,false, false);
         //load the image
 
         // this.car = new Car(this,startPos, this.blockSize);
 
         this.carList.push(
-            new Car(this, new Pos(8,4), new Pos(16,1), this.blockSize),
-            new Car(this, new Pos(9,4), new Pos(6,24), this.blockSize),
-            new Car(this, new Pos(25,2), new Pos(14,9), this.blockSize),
-            new Car(this, new Pos(36,1), new Pos(15,16), this.blockSize),
-            new Car(this, new Pos(7,4), new Pos(23,18), this.blockSize),
-            new Car(this, new Pos(30,5), new Pos(6,8), this.blockSize),
-            new Car(this, new Pos(29,10), new Pos(12,20), this.blockSize)
+            new Car(this, new Pos(8,4), new Pos(16,1), this.blockSize)
+            // new Car(this, new Pos(9,4), new Pos(6,24), this.blockSize),
+            // new Car(this, new Pos(25,2), new Pos(14,9), this.blockSize),
+            // new Car(this, new Pos(36,1), new Pos(15,16), this.blockSize),
+            // new Car(this, new Pos(7,4), new Pos(23,18), this.blockSize),
+            // new Car(this, new Pos(30,5), new Pos(6,8), this.blockSize),
+            // new Car(this, new Pos(29,10), new Pos(12,20), this.blockSize)
             );
         this.load();
+        //load the socket
+        this.socketHandler = new SocketHandler();
+        this.socketHandler.emit("hello","test");
 
         window.addEventListener("mousedown", (e) => this.getLocation(e));
 

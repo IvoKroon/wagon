@@ -100,7 +100,22 @@ var Car = (function () {
         this.endPos = endPos;
         this.speed = 1;
         this.calcPath();
+        this.loadImage();
     }
+    Car.prototype.loadImage = function () {
+        var _this = this;
+        this.image = new Image();
+        this.image.onload = function () {
+            _this.moveImage();
+        };
+        this.image.src = 'images/car.png';
+    };
+    Car.prototype.moveImage = function () {
+        var width = 20;
+        var height = 20;
+        this.game.context.drawImage(this.image, this.x, this.y, width, height);
+        this.game.context.fillRect(0, 0, 20, 20);
+    };
     Car.prototype.getX = function () {
         return this.x;
     };
@@ -119,12 +134,17 @@ var Car = (function () {
     Car.prototype.setPath = function (path) {
         this.path = path;
     };
+    Car.prototype.convertToRadians = function (degree) {
+        return degree * (Math.PI / 180);
+    };
     Car.prototype.draw = function () {
         this.game.context.beginPath();
         this.game.context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
         this.game.context.fillStyle = 'green';
         this.game.context.fill();
         this.game.context.closePath();
+    };
+    Car.prototype.drawImage = function () {
     };
     Car.prototype.moveToPoint = function () {
         var xDone = false;
@@ -184,7 +204,7 @@ var Car = (function () {
                 this.calcPath();
             }
         }
-        this.draw();
+        this.moveImage();
     };
     return Car;
 }());
@@ -198,9 +218,11 @@ var Game = (function () {
         this.blockSize = 20;
         var startPos = new Pos(9, 2);
         var endPos = new Pos(8, 8);
-        this.board = new Board(this, this.matrix, this.blockSize, true, true);
-        this.carList.push(new Car(this, new Pos(8, 4), new Pos(16, 1), this.blockSize), new Car(this, new Pos(9, 4), new Pos(6, 24), this.blockSize), new Car(this, new Pos(25, 2), new Pos(14, 9), this.blockSize), new Car(this, new Pos(36, 1), new Pos(15, 16), this.blockSize), new Car(this, new Pos(7, 4), new Pos(23, 18), this.blockSize), new Car(this, new Pos(30, 5), new Pos(6, 8), this.blockSize), new Car(this, new Pos(29, 10), new Pos(12, 20), this.blockSize));
+        this.board = new Board(this, this.matrix, this.blockSize, false, false);
+        this.carList.push(new Car(this, new Pos(8, 4), new Pos(16, 1), this.blockSize));
         this.load();
+        this.socketHandler = new SocketHandler();
+        this.socketHandler.emit("hello", "test");
         window.addEventListener("mousedown", function (e) { return _this.getLocation(e); });
         requestAnimationFrame(function () { return _this.gameLoop(); });
     }
@@ -270,6 +292,24 @@ var Pos = (function () {
         this.y = y;
     }
     return Pos;
+}());
+var SocketHandler = (function () {
+    function SocketHandler() {
+        this.init();
+    }
+    SocketHandler.prototype.init = function () {
+        this.socket = io();
+        console.log("Initing");
+    };
+    SocketHandler.prototype.emit = function (tag, data) {
+        this.socket.emit(tag, "hello");
+    };
+    SocketHandler.prototype.receiver = function (tag) {
+        this.socket.on(tag, function (data) {
+            return data;
+        });
+    };
+    return SocketHandler;
 }());
 var Util = (function () {
     function Util() {

@@ -21,6 +21,8 @@ class Car{
     private path:Array<Array<number>>
     private aStar:AStar;
 
+    private image:any;
+
     public done:Boolean = false;
 
     constructor(game:Game, startPos:Pos, endPos:Pos, blockSize:number){
@@ -40,7 +42,30 @@ class Car{
         // always first calc the path
         // We need to know where we need to go.
         this.calcPath();
+        this.loadImage();
                
+    }
+
+    loadImage(){
+        this.image = <any> new Image();
+
+        //drawing of the test image - img1
+        this.image.onload = () => {
+            //draw background image
+            this.moveImage();
+        };
+
+        this.image.src = 'images/car.png';
+    }
+
+    private moveImage(){
+            let width = 20;
+            let height = 20;
+
+            this.game.context.drawImage(this.image, this.x,this.y, width, height);
+            //draw a box over the tops
+            // this.game.context.fillStyle = "rgba(200, 0, 0, 0.5)";
+            this.game.context.fillRect(0, 0, 20, 20);
     }
 
     //get the location.
@@ -68,6 +93,31 @@ class Car{
         this.path = path;
     }
 
+    // drawRect(){
+    //     let rotate = this.incrementAngle();
+    //     let w = 20;
+    //     let h = 20;
+    //     this.game.context.save();                
+    //     this.game.context.translate(w*4,h*4);
+    //     this.game.context.rotate(this.convertToRadians(rotate));
+    //     this.game.context.fillStyle = 'yellow';
+    //     this.game.context.fillRect(-w/2,-h/2,w,h);         
+    //     this.game.context.restore();
+    // }
+    // //needed for rotating
+    // private incrementAngle():number{
+    //     let rotate++;
+    //     if(this.rotate > 360) {
+    //         this.rotate = 0;
+    //     }
+    //     return rotate;
+    // }
+    //needed for rotating 
+    // defrees to radians
+    private convertToRadians(degree:number) {
+            return degree*(Math.PI/180);
+    }
+
 
     draw(){
         this.game.context.beginPath();
@@ -75,6 +125,9 @@ class Car{
         this.game.context.fillStyle = 'green';
         this.game.context.fill();
         this.game.context.closePath();
+    }
+    drawImage(){
+         
     }
 
     //move to an point
@@ -156,7 +209,7 @@ class Car{
             }
         }
 
-        this.draw();
+        this.moveImage();
         
 
     }
